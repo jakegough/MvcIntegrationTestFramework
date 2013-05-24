@@ -31,3 +31,7 @@ Examples*/
 SerializerTest*/
 *.csproj.user
 *.resharper*
+*.ncrunch*
+*.[Dd]ot[Ss]ettings
+packages/
+_UpgradeReport_*

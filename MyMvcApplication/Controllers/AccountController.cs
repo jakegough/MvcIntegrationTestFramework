@@ -1,17 +1,17 @@
-﻿using System.Web.Mvc;
+using System.Web.Mvc;
 using System.Web.Security;
 
 namespace MyMvcApplication.Controllers
 {
     public class AccountController : Controller
     {
-        [AcceptVerbs(HttpVerbs.Get)]
+        [HttpGet]
         public ActionResult LogOn()
         {
             return View();
         }
 
-        [AcceptVerbs(HttpVerbs.Post)]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult LogOn(string username, string password)
         {
@@ -22,6 +22,13 @@ namespace MyMvcApplication.Controllers
 
             ModelState.AddModelError("username", "Either the username or password is incorrect.");
             return View();
+        }
+
+        public ActionResult LogOff()
+        {
+            FormsAuthentication.SignOut();
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Web.Mvc;
 using MvcIntegrationTestFramework.Browsing;
 using MvcIntegrationTestFramework.Hosting;
 using NUnit.Framework;
@@ -15,7 +16,16 @@ namespace MyMvcApplication.Tests
 		{
             //If you MVC project is not in the root of your solution directory then include the path
             //e.g. AppHost.Simulate("Website\MyMvcApplication")
-			appHost = AppHost.Simulate("MyMvcApplication");
+
+		    try
+		    {
+		        appHost = AppHost.Simulate("MyMvcApplication");
+		    }
+		    catch (Exception e)
+		    {
+		        Console.WriteLine(e.ToString());
+		        throw;
+		    }
 		}
 
 		[Test]

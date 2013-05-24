@@ -1,4 +1,5 @@
-Updated for MVC3
+
+Updated for MVC4, VS2012 with NuGet dependencies
 
 I have made a few alterations from the original so it should just work out of the box, no need for post build steps.
 
