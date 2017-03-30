@@ -9,16 +9,14 @@ namespace MvcIntegrationTestFramework
         public static NameValueCollection ConvertFromObject(object anonymous)
         {
             var nvc = new NameValueCollection();
-            var dict = new RouteValueDictionary(anonymous);
 
-            foreach (var kvp in dict)
+            foreach (var kvp in new RouteValueDictionary(anonymous))
             {
                 if (kvp.Value == null)
                 {
                     throw new NullReferenceException(kvp.Key);
-                    //nvc.Add(kvp.Key, "");
                 }
-                else if (kvp.Value.GetType().Name.Contains("Anonymous"))
+                if (kvp.Value.GetType().Name.Contains("Anonymous"))
                 {
                     var prefix = kvp.Key + ".";
                     foreach (var innerkvp in new RouteValueDictionary(kvp.Value))

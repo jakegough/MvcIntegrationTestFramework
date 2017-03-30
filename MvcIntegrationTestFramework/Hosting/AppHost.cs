@@ -80,8 +80,8 @@ namespace MvcIntegrationTestFramework.Hosting
 
         private static void RefreshEventsList(HttpApplication appInstance)
         {
-            object stepManager = typeof(HttpApplication).GetField("_stepManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(appInstance);
-            object resumeStepsWaitCallback = typeof(HttpApplication).GetField("_resumeStepsWaitCallback", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(appInstance);
+            var stepManager = typeof(HttpApplication).GetField("_stepManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(appInstance);
+            var resumeStepsWaitCallback = typeof(HttpApplication).GetField("_resumeStepsWaitCallback", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(appInstance);
             var buildStepsMethod = stepManager.GetType().GetMethod("BuildSteps", BindingFlags.NonPublic | BindingFlags.Instance);
             buildStepsMethod.Invoke(stepManager, new[] { resumeStepsWaitCallback });
         }
@@ -108,7 +108,7 @@ namespace MvcIntegrationTestFramework.Hosting
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             foreach (var file in Directory.GetFiles(baseDirectory, "*.dll"))
             {
-                var destFile = Path.Combine(mvcProjectPath, "bin", Path.GetFileName(file));
+                var destFile = Path.Combine(mvcProjectPath, "bin", Path.GetFileName(file)??"");
                 if (!File.Exists(destFile) || File.GetCreationTimeUtc(destFile) != File.GetCreationTimeUtc(file))
                 {
                     File.Copy(file, destFile, true);
@@ -121,7 +121,7 @@ namespace MvcIntegrationTestFramework.Hosting
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             while (baseDirectory.Contains("\\"))
             {
-                baseDirectory = baseDirectory.Substring(0, baseDirectory.LastIndexOf("\\"));
+                baseDirectory = baseDirectory.Substring(0, baseDirectory.LastIndexOf("\\", StringComparison.Ordinal));
                 var mvcPath = Path.Combine(baseDirectory, mvcProjectName);
                 if (Directory.Exists(mvcPath))
                 {

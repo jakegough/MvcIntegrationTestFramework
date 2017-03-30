@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq.Expressions;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Routing;
 using System.Web.SessionState;
 using MvcIntegrationTestFramework.Interception;
 
@@ -68,7 +66,7 @@ namespace MvcIntegrationTestFramework.Browsing
 
             // Parse out the querystring if provided
             string query = "";
-            int querySeparatorIndex = url.IndexOf("?");
+            int querySeparatorIndex = url.IndexOf("?", StringComparison.Ordinal);
             if (querySeparatorIndex >= 0) {
                 query = url.Substring(querySeparatorIndex + 1);
                 url = url.Substring(0, querySeparatorIndex);
@@ -95,18 +93,15 @@ namespace MvcIntegrationTestFramework.Browsing
 
         private void AddAnyNewCookiesToCookieCollection()
         {
-            if(LastRequestData.Response == null)
-                return;
+            if(LastRequestData.Response == null) return;
 
-            HttpCookieCollection lastResponseCookies = LastRequestData.Response.Cookies;
-            if(lastResponseCookies == null)
-                return;
+            var lastResponseCookies = LastRequestData.Response.Cookies;
 
             foreach (string cookieName in lastResponseCookies) {
-                HttpCookie cookie = lastResponseCookies[cookieName];
+                var cookie = lastResponseCookies[cookieName];
                 if (Cookies[cookieName] != null)
                     Cookies.Remove(cookieName);
-                if((cookie.Expires == default(DateTime)) || (cookie.Expires > DateTime.Now))
+                if(cookie != null && (cookie.Expires == default(DateTime) || cookie.Expires > DateTime.Now))
                     Cookies.Add(cookie);
             }
         }

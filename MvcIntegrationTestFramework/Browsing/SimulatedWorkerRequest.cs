@@ -10,7 +10,7 @@ namespace MvcIntegrationTestFramework.Browsing
 {
     internal class SimulatedWorkerRequest : SimpleWorkerRequest
     {
-        private HttpCookieCollection cookies;
+        private readonly HttpCookieCollection cookies;
         private readonly string httpVerbName;
         private readonly NameValueCollection formValues;
         private readonly NameValueCollection headers;
@@ -81,7 +81,10 @@ namespace MvcIntegrationTestFramework.Browsing
                 return null;
             var sb = new StringBuilder();
             foreach (string cookieName in cookies)
-                sb.AppendFormat("{0}={1};", cookieName, cookies[cookieName].Value);
+            {
+                var httpCookie = cookies[cookieName];
+                if (httpCookie != null) sb.AppendFormat("{0}={1};", cookieName, httpCookie.Value);
+            }
             return sb.ToString();
         }
     }

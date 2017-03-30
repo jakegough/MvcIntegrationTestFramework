@@ -39,7 +39,9 @@ namespace MvcIntegrationTestFramework.Hosting
             info.AddValue("delegateType", Delegate.GetType());
             var untypedDelegate = (Delegate) (object) Delegate;
             //If it's an "simple" delegate we can serialize it directly
-            if ((untypedDelegate.Target == null || untypedDelegate.Method.DeclaringType.GetCustomAttributes(typeof(SerializableAttribute), false).Length > 0) && Delegate != null)
+            if ((untypedDelegate.Target == null || 
+                (untypedDelegate.Method.DeclaringType == null) ||
+                (untypedDelegate.Method.DeclaringType.GetCustomAttributes(typeof(SerializableAttribute), false).Length > 0) && Delegate != null))
             {
                 info.AddValue("isSerializable", true);
                 info.AddValue("delegate", Delegate);
