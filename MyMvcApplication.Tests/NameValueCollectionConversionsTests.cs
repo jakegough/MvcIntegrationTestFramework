@@ -1,13 +1,13 @@
-﻿using Xunit;
-using System.Collections.Specialized;
-using MvcIntegrationTestFramework;
+﻿//using Xunit;
+//using System.Collections.Specialized;
+//using MvcIntegrationTestFramework;
 
 namespace MyMvcApplication.Tests
 {
 
     public class When_converting_an_object_with_one_string_property_to_name_value_collection
     {
-        private NameValueCollection convertedFromObjectWithString;
+ /*       private NameValueCollection convertedFromObjectWithString;
         
         public When_converting_an_object_with_one_string_property_to_name_value_collection()
         {
@@ -20,11 +20,11 @@ namespace MyMvcApplication.Tests
         {            
           Assert.Equal("hello",convertedFromObjectWithString["name"]);
         }
-    }
+   */ }
 
 
     public class When_converting_an_object_has_2_properties_to_name_value_collection
-    {
+    {/*
         private NameValueCollection converted;
 
         public When_converting_an_object_has_2_properties_to_name_value_collection()
@@ -49,10 +49,10 @@ namespace MyMvcApplication.Tests
         {
             Assert.Equal("30",converted["age"]);
         }
-    }
+    */}
 
     public class When_converting_an_object_that_has_a_nested_anonymous_object
-    {
+    {/*
         private NameValueCollection converted;
        
         public When_converting_an_object_that_has_a_nested_anonymous_object()
@@ -77,5 +77,5 @@ namespace MyMvcApplication.Tests
         {
             Assert.Equal("30",converted["Form.age"]);
         }
-    }
+    */}
 }
