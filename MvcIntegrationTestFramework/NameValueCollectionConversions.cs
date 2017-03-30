@@ -16,8 +16,9 @@ namespace MvcIntegrationTestFramework
                 if (kvp.Value == null)
                 {
                     throw new NullReferenceException(kvp.Key);
+                    //nvc.Add(kvp.Key, "");
                 }
-                if (kvp.Value.GetType().Name.Contains("Anonymous"))
+                else if (kvp.Value.GetType().Name.Contains("Anonymous"))
                 {
                     var prefix = kvp.Key + ".";
                     foreach (var innerkvp in new RouteValueDictionary(kvp.Value))

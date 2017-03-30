@@ -11,7 +11,7 @@ namespace MyMvcApplication.Tests
 	{
 		private AppHost appHost;
 
-		[OneTimeSetUp]
+		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
             //If you MVC project is not in the root of your solution directory then include the path
@@ -83,6 +83,10 @@ namespace MyMvcApplication.Tests
 
 				// Now follow redirection to logon page
 				string loginFormResponseText = browsingSession.Get(loginRedirectUrl).ResponseText;
+
+			    Console.WriteLine(loginFormResponseText);
+			    if (loginFormResponseText.Contains(" cannot be cast to ")) throw new Exception("Check your assembly bindings are correct.");
+
 				string suppliedAntiForgeryToken = MvcUtils.ExtractAntiForgeryToken(loginFormResponseText);
 
 				// Now post the login form, including the verification token
@@ -92,6 +96,7 @@ namespace MyMvcApplication.Tests
 																						   Password = "secret",
 																						   __RequestVerificationToken = suppliedAntiForgeryToken
 																					   });
+			    Assert.NotNull(loginResult.Response);
 				string afterLoginRedirectUrl = loginResult.Response.RedirectLocation;
 				Assert.AreEqual(securedActionUrl, afterLoginRedirectUrl, "Didn't redirect back to SecretAction");
 
