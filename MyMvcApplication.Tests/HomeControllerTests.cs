@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Specialized;
+using System.Text;
 using System.Web.Mvc;
 using MvcIntegrationTestFramework.Browsing;
 using MvcIntegrationTestFramework.Hosting;
@@ -79,6 +81,20 @@ namespace MyMvcApplication.Tests
 	            var thrownException = result.ActionExecutedContext.Exception;
 	            Assert.That(thrownException, Is.Not.Null);
 	            Assert.That(thrownException.Message, Is.EqualTo("This is a sample exception"));
+	        });
+	    }
+
+	    [Test]
+	    public void can_provide_custom_data_and_HTTP_verbs_in_requests()
+	    {
+	        appHost.Start(session =>
+	        {
+	            var headers = new NameValueCollection();
+	            headers.Add("Content-Type", "application/json");
+	            var bodyData = Encoding.UTF8.GetBytes("{\"Hello\":\"World\"}");
+	            var result = session.Request("/Home/Echo", HttpVerbs.Put, headers, bodyData);
+
+	            Assert.That(result.ResponseText, Is.EqualTo("application/json {\"Hello\":\"World\"}"));
 	        });
 	    }
 

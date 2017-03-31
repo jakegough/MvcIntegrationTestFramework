@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Web;
 using System.Web.Mvc;
 
@@ -19,10 +20,19 @@ namespace MyMvcApplication.Controllers
         {
             return View();
         }
+        
+        [HttpPut]
+        public ActionResult Echo()
+        {
+            Request.InputStream.Position = 0;
+            var raw = new StreamReader(Request.InputStream).ReadToEnd();
+
+            return Content(Request.ContentType +" "+ raw);
+        }
 
         public ActionResult DoStuffWithSessionAndCookies()
         {
-            Session["myIncrementingSessionItem"] = ((int?) (Session["myIncrementingSessionItem"] ?? 0)) + 1;
+            Session["myIncrementingSessionItem"] = (int?) (Session["myIncrementingSessionItem"] ?? 0) + 1;
             Response.Cookies.Add(new HttpCookie("mycookie", "myval"));
             return Content("OK");
         }

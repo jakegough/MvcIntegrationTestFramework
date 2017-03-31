@@ -12,18 +12,19 @@ namespace MvcIntegrationTestFramework.Browsing
     {
         private readonly HttpCookieCollection cookies;
         private readonly string httpVerbName;
-        private readonly NameValueCollection formValues;
+        private readonly byte[] bodyData;
         private readonly NameValueCollection headers;
 
         public int LastStatusCode;
         public string LastStatusDescription;
 
-        public SimulatedWorkerRequest(string page, string query, TextWriter output, HttpCookieCollection cookies, string httpVerbName, NameValueCollection formValues, NameValueCollection headers)
+        public SimulatedWorkerRequest(string page, string query, TextWriter output, HttpCookieCollection cookies,
+            string httpVerbName, byte[] bodyData, NameValueCollection headers)
             : base(page, query, output)
         {
             this.cookies = cookies;
             this.httpVerbName = httpVerbName;
-            this.formValues = formValues;
+            this.bodyData = bodyData;
             this.headers = headers;
         }
 
@@ -58,9 +59,7 @@ namespace MvcIntegrationTestFramework.Browsing
 
         public override string GetUnknownRequestHeader(string name)
         {
-            if(headers == null)
-                return null;
-            return headers[name];
+            return headers == null ? null : headers[name];
         }
 
         public override string[][] GetUnknownRequestHeaders()
@@ -76,18 +75,12 @@ namespace MvcIntegrationTestFramework.Browsing
 
         public override byte[] GetPreloadedEntityBody()
         {
-            if(formValues == null)
-                return base.GetPreloadedEntityBody();
-
-            var sb = new StringBuilder();
-            foreach (string key in formValues)
-                sb.AppendFormat("{0}={1}&", HttpUtility.UrlEncode(key), HttpUtility.UrlEncode(formValues[key]));
-            return Encoding.UTF8.GetBytes(sb.ToString());
+            return bodyData;
         }
 
         private string MakeCookieHeader()
         {
-            if((cookies == null) || (cookies.Count == 0))
+            if(cookies == null || cookies.Count == 0)
                 return null;
             var sb = new StringBuilder();
             foreach (string cookieName in cookies)

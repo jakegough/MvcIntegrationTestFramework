@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.IO;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.SessionState;
@@ -24,10 +25,8 @@ namespace MvcIntegrationTestFramework.Browsing
         }
 
         /// <summary>
-        /// Sends a post to your url. Url should NOT start with a /
+        /// Sends a form data post to your url.
         /// </summary>
-        /// <param name="url"></param>
-        /// <param name="formData"></param>
         /// <example>
         /// <code>
         /// var result = Post("registration/create", new
@@ -49,12 +48,20 @@ namespace MvcIntegrationTestFramework.Browsing
             return ProcessRequest(url, HttpVerbs.Post, formNameValueCollection);
         }
 
-        private RequestResult ProcessRequest(string url, HttpVerbs httpVerb = HttpVerbs.Get, NameValueCollection formValues = null)
+        /// <summary>
+        /// Make a request to the app, with custom verb, headers and body
+        /// </summary>
+        public RequestResult Request(string url, HttpVerbs httpVerb, NameValueCollection headers, byte[] bodyData)
         {
-            return ProcessRequest(url, httpVerb, formValues, null);
+            return ProcessRequest(url, httpVerb, bodyData, headers);
         }
 
-        private RequestResult ProcessRequest(string url, HttpVerbs httpVerb, NameValueCollection formValues, NameValueCollection headers)
+        private RequestResult ProcessRequest(string url, HttpVerbs httpVerb = HttpVerbs.Get, NameValueCollection formValues = null)
+        {
+            return ProcessRequest(url, httpVerb, SerialiseFormData(formValues), null);
+        }
+
+        private RequestResult ProcessRequest(string url, HttpVerbs httpVerb, byte[] bodyData, NameValueCollection headers)
         {
             if (url == null) throw new ArgumentNullException("url");
 
@@ -76,7 +83,7 @@ namespace MvcIntegrationTestFramework.Browsing
             LastRequestData.Reset();
             var output = new StringWriter();
             string httpVerbName = httpVerb.ToString().ToLower();
-            var workerRequest = new SimulatedWorkerRequest(url, query, output, Cookies, httpVerbName, formValues, headers);
+            var workerRequest = new SimulatedWorkerRequest(url, query, output, Cookies, httpVerbName, bodyData, headers);
             HttpRuntime.ProcessRequest(workerRequest);
 
             // Capture the output
@@ -94,6 +101,14 @@ namespace MvcIntegrationTestFramework.Browsing
                 ResultExecutedContext = LastRequestData.ResultExecutedContext,
                 Response = response
             };
+        }
+
+        private byte[] SerialiseFormData(NameValueCollection formData)
+        {
+            var sb = new StringBuilder();
+            foreach (string key in formData)
+                sb.AppendFormat("{0}={1}&", HttpUtility.UrlEncode(key), HttpUtility.UrlEncode(formData[key]));
+            return Encoding.UTF8.GetBytes(sb.ToString());
         }
 
         private HttpResponse RecoverResponseData(ControllerContext ctx, SimulatedWorkerRequest workerRequest)
