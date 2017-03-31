@@ -32,8 +32,13 @@ namespace MyMvcApplication.Controllers
 
         public ActionResult DoStuffWithSessionAndCookies()
         {
+            var inputValue = "";
+            var requestCookie = Request.Cookies["inputCookie"];
+            if (requestCookie != null) inputValue = requestCookie.Value;
+
             Session["myIncrementingSessionItem"] = (int?) (Session["myIncrementingSessionItem"] ?? 0) + 1;
-            Response.Cookies.Add(new HttpCookie("mycookie", "myval"));
+            Response.Cookies.Add(new HttpCookie("mycookie", inputValue+"_Changed"));
+
             return Content("OK");
         }
 

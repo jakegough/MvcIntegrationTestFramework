@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Text;
+using System.Web;
 using System.Web.Mvc;
 using MvcIntegrationTestFramework.Browsing;
 using MvcIntegrationTestFramework.Hosting;
@@ -99,17 +100,19 @@ namespace MyMvcApplication.Tests
 	    }
 
 	    [Test]
-		public void WorkWithCookiesAndSession()
+		public void session_values_and_cookies_can_be_inpected()
 		{
 			appHost.Start(browsingSession =>
 			{
 				string url = "Home/DoStuffWithSessionAndCookies";
+			    browsingSession.Cookies.Add(new HttpCookie("InputCookie", "inputValue")); 
+
 				var result = browsingSession.Get(url);
 
 			    Assert.That(result.IsSuccess);
 
 				// Can make assertions about cookies
-				Assert.AreEqual("myval", browsingSession.Cookies["mycookie"]?.Value);
+				Assert.AreEqual("inputValue_Changed", browsingSession.Cookies["mycookie"]?.Value);
 
 				// Can read Session as long as you've already made at least one request
 				// (you can also write to Session from your test if you want)
@@ -124,7 +127,7 @@ namespace MyMvcApplication.Tests
 		}
 
 		[Test]
-		public void LogInProcess()
+		public void Complex_multi_page_interactions__LogInProcess()
 		{
 			string securedActionUrl = "/Home/SecretAction";
 
@@ -141,7 +144,6 @@ namespace MyMvcApplication.Tests
 				// Now follow redirection to logon page
 				string loginFormResponseText = browsingSession.Get(loginRedirectUrl).ResponseText;
 
-			    Console.WriteLine(loginFormResponseText);
 			    if (loginFormResponseText.Contains(" cannot be cast to ")) throw new Exception("Check your assembly bindings are correct.");
 
 				string suppliedAntiForgeryToken = MvcUtils.ExtractAntiForgeryToken(loginFormResponseText);
@@ -162,5 +164,29 @@ namespace MyMvcApplication.Tests
 				Assert.AreEqual("Hello, you're logged in as steve", afterLoginResult.ResponseText);
 			});
 		}
-	}
+
+	    [Test]
+	    public void stress_test__100_calls_in_single_session()
+	    {
+	        appHost.Start(session => {
+	            for (int i = 0; i < 100; i++)
+	            {
+	                var result = session.Get("");
+	                Assert.That(result.IsSuccess);
+	            }
+            });
+	    }
+
+	    [Test]
+	    public void stress_test__100_sessions_with_a_single_call()
+	    {
+            for (int i = 0; i < 100; i++)
+            {
+                appHost.Start(session => {
+                    var result = session.Get("");
+                    Assert.That(result.IsSuccess);
+                });
+            }
+        }
+    }
 }
