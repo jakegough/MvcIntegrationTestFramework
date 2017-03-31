@@ -15,6 +15,9 @@ namespace MvcIntegrationTestFramework.Browsing
         private readonly NameValueCollection formValues;
         private readonly NameValueCollection headers;
 
+        public int LastStatusCode;
+        public string LastStatusDescription;
+
         public SimulatedWorkerRequest(string page, string query, TextWriter output, HttpCookieCollection cookies, string httpVerbName, NameValueCollection formValues, NameValueCollection headers)
             : base(page, query, output)
         {
@@ -22,6 +25,13 @@ namespace MvcIntegrationTestFramework.Browsing
             this.httpVerbName = httpVerbName;
             this.formValues = formValues;
             this.headers = headers;
+        }
+
+        public override void SendStatus(int statusCode, string statusDescription)
+        {
+            LastStatusCode = statusCode;
+            LastStatusDescription = statusDescription;
+            base.SendStatus(statusCode, statusDescription);
         }
 
         public override string GetHttpVerbName()

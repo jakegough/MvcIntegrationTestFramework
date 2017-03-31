@@ -11,7 +11,7 @@ namespace MvcIntegrationTestFramework.Browsing
     public class BrowsingSession
     {
         public HttpSessionState Session { get; private set; }
-        public HttpCookieCollection Cookies { get; private set; }
+        public readonly HttpCookieCollection Cookies;
 
         public BrowsingSession()
         {
@@ -82,12 +82,38 @@ namespace MvcIntegrationTestFramework.Browsing
             // Capture the output
             AddAnyNewCookiesToCookieCollection();
             Session = LastRequestData.HttpSessionState;
+
+            // In the case of errors, try to pull out some useful info from the HttpContext
+            var response = LastRequestData.Response ??
+                           RecoverResponseData(LastRequestData.ActionExecutedContext, workerRequest);
+
             return new RequestResult
             {
                 ResponseText = output.ToString(),
                 ActionExecutedContext = LastRequestData.ActionExecutedContext,
                 ResultExecutedContext = LastRequestData.ResultExecutedContext,
-                Response = LastRequestData.Response,
+                Response = response
+            };
+        }
+
+        private HttpResponse RecoverResponseData(ControllerContext ctx, SimulatedWorkerRequest workerRequest)
+        {
+            if (ctx == null || ctx.HttpContext == null || ctx.HttpContext.Response == null)
+            {
+                return new HttpResponse(TextWriter.Null)
+                {
+                    StatusCode = workerRequest.LastStatusCode,
+                    StatusDescription = workerRequest.LastStatusDescription
+                };
+            }
+
+            var orig = ctx.HttpContext.Response;
+            return new HttpResponse(TextWriter.Null)
+            {
+                StatusCode = orig.StatusCode,
+                Charset = orig.Charset,
+                ContentType = orig.ContentType,
+                RedirectLocation = orig.RedirectLocation
             };
         }
 

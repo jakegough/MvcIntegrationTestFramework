@@ -46,16 +46,54 @@ namespace MyMvcApplication.Tests
 			});
 		}
 
-		[Test]
+	    [Test]
+	    public void using_the_wrong_verb_results_in_a_failure_code()
+	    {
+	        appHost.Start(session =>
+	        {
+	            var result = session.Post("Home/Index", new {data = "hello"});
+
+	            Assert.That(result.IsClientError);
+	        });
+	    }
+
+	    [Test]
+	    public void querying_a_non_existent_route_gives_a_404()
+	    {
+	        appHost.Start(session =>
+	        {
+	            var result = session.Get("/Home/MotTheHoople");
+	            Assert.That(result.IsClientError);
+	            Assert.That(result.Response.StatusCode, Is.EqualTo(404));
+	        });
+	    }
+
+	    [Test]
+	    public void thrown_exceptions_can_be_caught_and_asserted_against()
+	    {
+	        appHost.Start(session => {
+	            var result = session.Get("/Home/FaultyRoute");
+
+	            Assert.That(result.IsServerError);
+
+	            var thrownException = result.ActionExecutedContext.Exception;
+	            Assert.That(thrownException, Is.Not.Null);
+	            Assert.That(thrownException.Message, Is.EqualTo("This is a sample exception"));
+	        });
+	    }
+
+	    [Test]
 		public void WorkWithCookiesAndSession()
 		{
 			appHost.Start(browsingSession =>
 			{
-				string url = "home/DoStuffWithSessionAndCookies";
-				browsingSession.Get(url);
+				string url = "Home/DoStuffWithSessionAndCookies";
+				var result = browsingSession.Get(url);
+
+			    Assert.That(result.IsSuccess);
 
 				// Can make assertions about cookies
-				Assert.AreEqual("myval", browsingSession.Cookies["mycookie"].Value);
+				Assert.AreEqual("myval", browsingSession.Cookies["mycookie"]?.Value);
 
 				// Can read Session as long as you've already made at least one request
 				// (you can also write to Session from your test if you want)
@@ -72,12 +110,15 @@ namespace MyMvcApplication.Tests
 		[Test]
 		public void LogInProcess()
 		{
-			string securedActionUrl = "/home/SecretAction";
+			string securedActionUrl = "/Home/SecretAction";
 
 			appHost.Start(browsingSession =>
 			{
 				// First try to request a secured page without being logged in                
 				RequestResult initialRequestResult = browsingSession.Get(securedActionUrl);
+
+			    Assert.That(initialRequestResult.IsRedirect);
+
 				string loginRedirectUrl = initialRequestResult.Response.RedirectLocation;
 				Assert.IsTrue(loginRedirectUrl.StartsWith("/Account/LogOn"), "Didn't redirect to logon page");
 

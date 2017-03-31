@@ -1,6 +1,8 @@
+MvcIntegrationTestFramework
+===========================
 
-Updated for MVC4, VS2012 with NuGet dependencies
+This fork targets MVC 5, VS2015.
 
-I have made a few alterations from the original so it should just work out of the box, no need for post build steps.
+Everything should just work out of the box, no need for post build steps.
 
-The example HomeControllerTests should explain everything
+The example HomeControllerTests should explain everything. I have removed the xunit demo to reduce the number of dependencies. XUnit should still be fully supported.
