@@ -28,13 +28,32 @@ namespace MvcIntegrationTestFramework.Hosting
             });
         }
 
+        /// <summary>
+        /// Run a set of test actions in the ASP.Net application domain.
+        /// BrowsingSession object is connected to the MVC project supplied to the `Simulate` method.
+        /// </summary>
         public void Start(Action<BrowsingSession> testScript)
         {
             var serializableDelegate = new SerializableDelegate<Action<BrowsingSession>>(testScript);
             _appDomainProxy.RunBrowsingSessionInAppDomain(serializableDelegate);
         }
 
-        #region Initializing app & interceptors
+        /// <summary>
+        /// Creates an instance of the AppHost so it can be used to simulate a browsing session.
+        /// Use the `Start` method on the returned AppHost to communicate with the MVC host.
+        /// </summary>
+        public static AppHost Simulate(string mvcProjectDirectory)
+        {
+            var mvcProjectPath = GetMvcProjectPath(mvcProjectDirectory);
+            if (mvcProjectPath == null)
+            {
+                throw new ArgumentException("Mvc Project " + mvcProjectDirectory + " not found");
+            }
+            CopyDllFiles(mvcProjectPath);
+            return new AppHost(mvcProjectPath);
+        }
+
+
         private static void InitializeApplication()
         {
             var appInstance = GetApplicationInstance();
@@ -51,9 +70,7 @@ namespace MvcIntegrationTestFramework.Hosting
 
             RecycleApplicationInstance(appInstance);
         }
-        #endregion
 
-        #region Reflection hacks
         private static readonly MethodInfo getApplicationInstanceMethod;
         private static readonly MethodInfo recycleApplicationInstanceMethod;
 
@@ -80,27 +97,15 @@ namespace MvcIntegrationTestFramework.Hosting
 
         private static void RefreshEventsList(HttpApplication appInstance)
         {
-            var stepManager = typeof(HttpApplication).GetField("_stepManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(appInstance);
-            var resumeStepsWaitCallback = typeof(HttpApplication).GetField("_resumeStepsWaitCallback", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(appInstance);
+            var stepManagerField = typeof(HttpApplication).GetField("_stepManager", BindingFlags.NonPublic | BindingFlags.Instance);
+            var resumeStepsWaitCallbackField = typeof(HttpApplication).GetField("_resumeStepsWaitCallback", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            if (stepManagerField == null || resumeStepsWaitCallbackField == null) throw new Exception("Expected fields were not present on HttpApplication type. This version of MvcTestIntegrationFramework may not be suitable for your project.");
+
+            var stepManager = stepManagerField.GetValue(appInstance);
+            var resumeStepsWaitCallback = resumeStepsWaitCallbackField.GetValue(appInstance);
             var buildStepsMethod = stepManager.GetType().GetMethod("BuildSteps", BindingFlags.NonPublic | BindingFlags.Instance);
             buildStepsMethod.Invoke(stepManager, new[] { resumeStepsWaitCallback });
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Creates an instance of the AppHost so it can be used to simulate a browsing session.
-        /// </summary>
-        /// <returns></returns>
-        public static AppHost Simulate(string mvcProjectDirectory)
-        {
-            var mvcProjectPath = GetMvcProjectPath(mvcProjectDirectory);
-            if (mvcProjectPath == null)
-            {
-                throw new ArgumentException(string.Format("Mvc Project {0} not found", mvcProjectDirectory));
-            }
-            CopyDllFiles(mvcProjectPath);
-            return new AppHost(mvcProjectPath);
         }
 
         private static void CopyDllFiles(string mvcProjectPath)

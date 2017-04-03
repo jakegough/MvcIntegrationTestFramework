@@ -17,7 +17,7 @@ namespace MvcIntegrationTestFramework.Interception
                 lastHttpContext = HttpContext.Current;
 
             // Clone to get a more stable snapshot
-            if ((filterContext != null) && (LastRequestData.ActionExecutedContext == null))
+            if (filterContext != null && LastRequestData.ActionExecutedContext == null)
                 LastRequestData.ActionExecutedContext = new ActionExecutedContext {
                     ActionDescriptor = filterContext.ActionDescriptor,
                     Canceled = filterContext.Canceled,
@@ -34,7 +34,7 @@ namespace MvcIntegrationTestFramework.Interception
         public override void OnResultExecuted(ResultExecutedContext filterContext)
         {
             // Clone to get a more stable snapshot
-            if ((filterContext != null) && (LastRequestData.ResultExecutedContext == null))
+            if (filterContext != null && LastRequestData.ResultExecutedContext == null)
                 LastRequestData.ResultExecutedContext = new ResultExecutedContext {
                     Canceled = filterContext.Canceled,
                     Exception = filterContext.Exception,

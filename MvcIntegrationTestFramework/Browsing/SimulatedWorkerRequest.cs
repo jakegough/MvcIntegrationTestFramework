@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace MvcIntegrationTestFramework.Browsing
 {
+    /// <summary>
+    /// A proxy object used by the ASP.Net MVC infrastructure to send and receive request and response values
+    /// </summary>
     internal class SimulatedWorkerRequest : SimpleWorkerRequest
     {
         private readonly HttpCookieCollection cookies;

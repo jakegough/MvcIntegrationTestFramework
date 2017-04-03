@@ -12,7 +12,7 @@ namespace MvcIntegrationTestFramework.Hosting
     [Serializable]
     internal class SerializableDelegate<TDelegate> : ISerializable where TDelegate : class
     {
-        public TDelegate Delegate { get; private set; }
+        public readonly TDelegate Delegate;
 
         internal SerializableDelegate(TDelegate @delegate)
         {
@@ -57,7 +57,7 @@ namespace MvcIntegrationTestFramework.Hosting
         [Serializable]
         private class AnonymousClassWrapper : ISerializable
         {
-            public object TargetInstance { get; private set; }
+            public readonly object TargetInstance;
             private readonly Type targetType;
 
             internal AnonymousClassWrapper(Type targetType, object targetInstance)

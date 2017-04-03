@@ -16,6 +16,9 @@ namespace MvcIntegrationTestFramework.Interception
         public static HttpSessionState HttpSessionState { get; set; }
         public static HttpResponse Response { get; set; }
 
+        /// <summary>
+        /// Clear all stored data, ready for a new request
+        /// </summary>
         public static void Reset()
         {
             ActionExecutedContext = null;

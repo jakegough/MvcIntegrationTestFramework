@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 
 namespace MvcIntegrationTestFramework.Browsing
 {
@@ -9,8 +8,12 @@ namespace MvcIntegrationTestFramework.Browsing
         {
             if (htmlResponseText == null) throw new ArgumentNullException("htmlResponseText");
 
-            var match = Regex.Match(htmlResponseText, @"\<input name=""__RequestVerificationToken"" type=""hidden"" value=""([^""]+)"" \/\>");
-            return match.Success ? match.Groups[1].Captures[0].Value : null;
+            const string pattern = "<input name=\"__RequestVerificationToken\" type=\"hidden\" value=\"";
+            var idx1 = htmlResponseText.IndexOf(pattern, StringComparison.Ordinal);
+            if (idx1 < 1) return null;
+            idx1 += pattern.Length;
+            var idx2 = htmlResponseText.IndexOf("\"", idx1, StringComparison.Ordinal);
+            return htmlResponseText.Substring(idx1, idx2 - idx1);
         }
     }
 }

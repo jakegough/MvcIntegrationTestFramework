@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.SessionState;
@@ -58,7 +57,7 @@ namespace MvcIntegrationTestFramework.Browsing
 
         private RequestResult ProcessRequest(string url, HttpVerbs httpVerb = HttpVerbs.Get, NameValueCollection formValues = null)
         {
-            return ProcessRequest(url, httpVerb, SerialiseFormData(formValues), null);
+            return ProcessRequest(url, httpVerb, NameValueCollectionConversions.SerialiseFormData(formValues), null);
         }
 
         private RequestResult ProcessRequest(string url, HttpVerbs httpVerb, byte[] bodyData, NameValueCollection headers)
@@ -103,14 +102,6 @@ namespace MvcIntegrationTestFramework.Browsing
             };
         }
 
-        private byte[] SerialiseFormData(NameValueCollection formData)
-        {
-            var sb = new StringBuilder();
-            foreach (string key in formData)
-                sb.AppendFormat("{0}={1}&", HttpUtility.UrlEncode(key), HttpUtility.UrlEncode(formData[key]));
-            return Encoding.UTF8.GetBytes(sb.ToString());
-        }
-
         private HttpResponse RecoverResponseData(ControllerContext ctx, SimulatedWorkerRequest workerRequest)
         {
             if (ctx == null || ctx.HttpContext == null || ctx.HttpContext.Response == null)
@@ -134,7 +125,7 @@ namespace MvcIntegrationTestFramework.Browsing
 
         private void AddAnyNewCookiesToCookieCollection()
         {
-            if(LastRequestData.Response == null) return;
+            if (LastRequestData.Response == null) return;
 
             var lastResponseCookies = LastRequestData.Response.Cookies;
 
