@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>MvcIntegrationTestFramework</id>
+    <version>1.0.0</version>
+    <authors>i-e-b</authors>
+    <owners>i-e-b</owners>
+    <!--<licenseUrl>http://...pending...</licenseUrl>-->
+    <projectUrl>https://github.com/i-e-b/MvcIntegrationTestFramework</projectUrl>
+    <!--<iconUrl>http://...pending...</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Integration test harness for ASP.Net MVC 5. Allows you to fully integration test an MVC web project without needing to host under IIS or similar. Allows access to both server state and client responses in a single assertion.</description>
+    <releaseNotes>Initial release</releaseNotes>
+    <copyright>2017</copyright>
+    <tags>aspnet mvc test integration unit</tags>
+    <dependencies>
+	  <dependency id="Microsoft.AspNet.Mvc" version="5.2.3" />
+	  <dependency id="Microsoft.AspNet.Razor" version="3.2.3" />
+	  <dependency id="Microsoft.AspNet.WebPages" version="3.2.3" />
+	  <dependency id="Microsoft.Web.Infrastructure" version="1.0.0.0" />
+    </dependencies>
+  </metadata>
+</package>

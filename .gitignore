@@ -1,6 +1,7 @@
 .vs/
 References/
 Scripts/
+*.nupkg
 
 #ignore thumbnails created by windows
 Thumbs.db
