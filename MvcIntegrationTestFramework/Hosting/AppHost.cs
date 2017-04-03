@@ -9,6 +9,7 @@ using MvcIntegrationTestFramework.Interception;
 
 namespace MvcIntegrationTestFramework.Hosting
 {
+
     /// <summary>
     /// Hosts an ASP.NET application within an ASP.NET-enabled .NET appdomain
     /// and provides methods for executing test code within that appdomain
@@ -71,15 +72,15 @@ namespace MvcIntegrationTestFramework.Hosting
             RecycleApplicationInstance(appInstance);
         }
 
-        private static readonly MethodInfo getApplicationInstanceMethod;
-        private static readonly MethodInfo recycleApplicationInstanceMethod;
+        private static readonly MethodInfo GetApplicationInstanceMethod;
+        private static readonly MethodInfo RecycleApplicationInstanceMethod;
 
         static AppHost()
         {
             // Get references to some MethodInfos we'll need to use later to bypass nonpublic access restrictions
             var httpApplicationFactory = typeof(HttpContext).Assembly.GetType("System.Web.HttpApplicationFactory", true);
-            getApplicationInstanceMethod = httpApplicationFactory.GetMethod("GetApplicationInstance", BindingFlags.Static | BindingFlags.NonPublic);
-            recycleApplicationInstanceMethod = httpApplicationFactory.GetMethod("RecycleApplicationInstance", BindingFlags.Static | BindingFlags.NonPublic);
+            GetApplicationInstanceMethod = httpApplicationFactory.GetMethod("GetApplicationInstance", BindingFlags.Static | BindingFlags.NonPublic);
+            RecycleApplicationInstanceMethod = httpApplicationFactory.GetMethod("RecycleApplicationInstance", BindingFlags.Static | BindingFlags.NonPublic);
         }
 
         private static HttpApplication GetApplicationInstance()
@@ -87,12 +88,44 @@ namespace MvcIntegrationTestFramework.Hosting
             var writer = new StringWriter();
             var workerRequest = new SimpleWorkerRequest("", "", writer);
             var httpContext = new HttpContext(workerRequest);
-            return (HttpApplication)getApplicationInstanceMethod.Invoke(null, new object[] { httpContext });
+
+            ExperimentalPreload();
+
+            // This can fail with "BuildManager.EnsureTopLevelFilesCompiled This method cannot be called during the application's pre-start initialization phase"
+            //   at System.Web.Compilation.BuildManager.EnsureTopLevelFilesCompiled()
+            //at System.Web.Compilation.BuildManager.GetGlobalAsaxTypeInternal()
+            //at System.Web.HttpApplicationFactory.CompileApplication()
+            //at System.Web.HttpApplicationFactory.Init()
+            //at System.Web.HttpApplicationFactory.EnsureInited()
+            //at System.Web.HttpApplicationFactory.GetApplicationInstance(HttpContext context)
+            return (HttpApplication)GetApplicationInstanceMethod.Invoke(null, new object[] { httpContext });
+        }
+
+        private static void ExperimentalPreload()
+        {
+            return; // not being used
+                    // experimental fix to horrible build manager cruft.
+            /*var preStart = typeof(System.Web.Compilation.BuildManager).GetMethod("InvokePreStartInitMethods", BindingFlags.Static | BindingFlags.NonPublic);
+            
+            preStart.Invoke(null, new object[] { new List<MethodInfo>() });
+            //InvokePreStartInitMethods(new List<MethodInfo>());
+            
+            //HttpRuntime._theRuntime._appDomainAppPath
+            var x = HttpRuntime.AppDomainAppPath;
+            Console.WriteLine(x);
+
+            //var appmgr = ApplicationManager.GetApplicationManager();
+            //appmgr.GetAppDomain().
+            var test = System.Web.Compilation.BuildManager.GetReferencedAssemblies();
+            foreach (var assm in test)
+            {
+                Console.WriteLine(assm.ToString());
+            }*/
         }
 
         private static void RecycleApplicationInstance(HttpApplication appInstance)
         {
-            recycleApplicationInstanceMethod.Invoke(null, new object[] { appInstance });
+            RecycleApplicationInstanceMethod.Invoke(null, new object[] { appInstance });
         }
 
         private static void RefreshEventsList(HttpApplication appInstance)
@@ -108,6 +141,9 @@ namespace MvcIntegrationTestFramework.Hosting
             buildStepsMethod.Invoke(stepManager, new[] { resumeStepsWaitCallback });
         }
 
+        /// <summary>
+        /// Copy the test files into the MVC project path
+        /// </summary>
         private static void CopyDllFiles(string mvcProjectPath)
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
