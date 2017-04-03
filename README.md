@@ -4,6 +4,7 @@ MvcIntegrationTestFramework
 Integration test harness for ASP.Net MVC 5. Allows you to fully integration test an MVC web project without needing to host under IIS or similar. Allows access to both server state and client responses in a single assertion.
 
 ![Batteries included](https://raw.githubusercontent.com/i-e-b/MvcIntegrationTestFramework/master/batteries_small.png)
+https://www.nuget.org/packages/MvcIntegrationTestFramework
 
 This fork targets MVC 5, VS2015.
 
