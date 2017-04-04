@@ -156,12 +156,20 @@ namespace MvcIntegrationTestFramework.Hosting
         private static void CopyDllFiles(string mvcProjectPath)
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
             foreach (var file in Directory.GetFiles(baseDirectory, "*.dll"))
             {
-                var destFile = Path.Combine(mvcProjectPath, "bin", Path.GetFileName(file)??"");
-                if (!File.Exists(destFile) || File.GetCreationTimeUtc(destFile) != File.GetCreationTimeUtc(file))
+                var fileName = Path.GetFileName(file) ?? "";
+                var destFile = Path.Combine(mvcProjectPath, "bin", fileName);
+
+                if (fileName == "MvcIntegrationTestFramework.dll") // update the test assembly
                 {
-                    File.Copy(file, destFile, true);
+                    if (!File.Exists(destFile) || File.GetCreationTimeUtc(destFile) != File.GetCreationTimeUtc(file))
+                        File.Copy(file, destFile, true);
+                }
+                else if (!File.Exists(destFile)) // assume target MVC website has the correct binaries
+                {
+                    File.Copy(file, destFile, false);
                 }
             }
         }
