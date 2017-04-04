@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Web;
@@ -18,11 +19,13 @@ namespace MvcIntegrationTestFramework.Hosting
     {
         private readonly AppDomainProxy _appDomainProxy; // The gateway to the ASP.NET-enabled .NET appdomain
 
-        private AppHost(string appPhysicalDirectory, string virtualDirectory = "/")
+        private AppHost(string appPhysicalDirectory, bool experimentalSetup, string virtualDirectory = "/")
         {
             _appDomainProxy = (AppDomainProxy)ApplicationHost.CreateApplicationHost(typeof(AppDomainProxy), virtualDirectory, appPhysicalDirectory);
             _appDomainProxy.RunCodeInAppDomain(() =>
             {
+                if (experimentalSetup) { ExperimentalPreload(); }
+
                 InitializeApplication();
                 FilterProviders.Providers.Add(new InterceptionFilterProvider());
                 LastRequestData.Reset();
@@ -43,7 +46,9 @@ namespace MvcIntegrationTestFramework.Hosting
         /// Creates an instance of the AppHost so it can be used to simulate a browsing session.
         /// Use the `Start` method on the returned AppHost to communicate with the MVC host.
         /// </summary>
-        public static AppHost Simulate(string mvcProjectDirectory)
+        /// <param name="mvcProjectDirectory">Directory containing the MVC project, relative to the solution base path</param>
+        /// <param name="experimentalSetup">If true, include som experimental setup changes and ASP.Net hooks</param>
+        public static AppHost Simulate(string mvcProjectDirectory, bool experimentalSetup = false)
         {
             var mvcProjectPath = GetMvcProjectPath(mvcProjectDirectory);
             if (mvcProjectPath == null)
@@ -51,7 +56,7 @@ namespace MvcIntegrationTestFramework.Hosting
                 throw new ArgumentException("Mvc Project " + mvcProjectDirectory + " not found");
             }
             CopyDllFiles(mvcProjectPath);
-            return new AppHost(mvcProjectPath);
+            return new AppHost(mvcProjectPath, experimentalSetup);
         }
 
 
@@ -89,8 +94,6 @@ namespace MvcIntegrationTestFramework.Hosting
             var workerRequest = new SimpleWorkerRequest("", "", writer);
             var httpContext = new HttpContext(workerRequest);
 
-            ExperimentalPreload();
-
             // This can fail with "BuildManager.EnsureTopLevelFilesCompiled This method cannot be called during the application's pre-start initialization phase"
             //   at System.Web.Compilation.BuildManager.EnsureTopLevelFilesCompiled()
             //at System.Web.Compilation.BuildManager.GetGlobalAsaxTypeInternal()
@@ -98,29 +101,31 @@ namespace MvcIntegrationTestFramework.Hosting
             //at System.Web.HttpApplicationFactory.Init()
             //at System.Web.HttpApplicationFactory.EnsureInited()
             //at System.Web.HttpApplicationFactory.GetApplicationInstance(HttpContext context)
+
+            // I've seen this with SimpleInjector's
+            // [assembly: WebActivator.PostApplicationStartMethod(...)]
+            // start-up code. Removing this fixes the error.
+
             return (HttpApplication)GetApplicationInstanceMethod.Invoke(null, new object[] { httpContext });
         }
 
         private static void ExperimentalPreload()
         {
-            return; // not being used
-                    // experimental fix to horrible build manager cruft.
-            /*var preStart = typeof(System.Web.Compilation.BuildManager).GetMethod("InvokePreStartInitMethods", BindingFlags.Static | BindingFlags.NonPublic);
-            
-            preStart.Invoke(null, new object[] { new List<MethodInfo>() });
-            //InvokePreStartInitMethods(new List<MethodInfo>());
-            
-            //HttpRuntime._theRuntime._appDomainAppPath
-            var x = HttpRuntime.AppDomainAppPath;
-            Console.WriteLine(x);
+            // experimental fix to horrible build manager cruft.
 
-            //var appmgr = ApplicationManager.GetApplicationManager();
-            //appmgr.GetAppDomain().
+            // Trigger the end of 'PreStart' phase
+            // System.Web.Compilation.BuildManager.InvokePreStartInitMethods(new List<MethodInfo>());
+            var preStart = typeof(System.Web.Compilation.BuildManager)
+                .GetMethod("InvokePreStartInitMethods", BindingFlags.Static | BindingFlags.NonPublic);
+            preStart.Invoke(null, new object[] { new List<MethodInfo>() });
+
+            //HttpRuntime._theRuntime._appDomainAppPath
+            //var x = HttpRuntime.AppDomainAppPath;
+            //Console.WriteLine(x);
+
+            // Trigger compile phase
             var test = System.Web.Compilation.BuildManager.GetReferencedAssemblies();
-            foreach (var assm in test)
-            {
-                Console.WriteLine(assm.ToString());
-            }*/
+            foreach (var assm in test) { Console.WriteLine(assm.ToString()); }
         }
 
         private static void RecycleApplicationInstance(HttpApplication appInstance)
