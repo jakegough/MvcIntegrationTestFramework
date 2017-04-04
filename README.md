@@ -42,4 +42,49 @@ Then for each test flow, start a browsing session, make your calls and assert ag
 
 See the `MyMvcApplication.Tests` project and the `HomeControllerTests.cs` file for more examples.
 
+Known issues
+============
+
+Simple Injector
+---------------
+
+Simple Injector's `[assembly: WebActivator.PostApplicationStartMethod(...)]` injection causes problems with the ASP.Net hosting enviroment.
+There is an experimental `AppHost.UseExperimentalSetup` flag that can be set to try to work around this, but it is very unreliable at present.
+
+You can remove the assembly level injector and call your setup from `Global.aspx` to solve this.
+
+
+System.Web.Optimization
+------------------------
+The Bundle provider for System.Web.Optimization can cause issues when running tests.
+To work around this, call `BundleTable.VirtualPathProvider = new TestVPP();` before you call `AppHost.Simulate`, with `TestVPP` defined:
+
+```csharp
+    public class TestVPP : VirtualPathProvider
+    {
+        public override bool FileExists(string virtualPath)
+        {
+            Console.WriteLine(virtualPath);
+            return true;
+        }
+
+        public override VirtualFile GetFile(string virtualPath)
+        {
+            return new DummyVirtualFile(virtualPath);
+        }
+    }
+
+    public class DummyVirtualFile: VirtualFile
+    {
+        public DummyVirtualFile(string virtualPath) : base(virtualPath)
+        {
+        }
+
+        public override Stream Open()
+        {
+            return new MemoryStream();
+        }
+    }
+```
+
 [Icon via game-icones.net](http://game-icons.net/lorc/originals/batteries.html) 

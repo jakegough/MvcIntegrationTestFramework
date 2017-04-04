@@ -19,12 +19,17 @@ namespace MvcIntegrationTestFramework.Hosting
     {
         private readonly AppDomainProxy _appDomainProxy; // The gateway to the ASP.NET-enabled .NET appdomain
 
-        private AppHost(string appPhysicalDirectory, bool experimentalSetup, string virtualDirectory = "/")
+        /// <summary>
+        /// If true, include som experimental setup changes and ASP.Net hooks
+        /// </summary>
+        public static bool UseExperimentalSetup = false;
+
+        private AppHost(string appPhysicalDirectory, string virtualDirectory = "/")
         {
             _appDomainProxy = (AppDomainProxy)ApplicationHost.CreateApplicationHost(typeof(AppDomainProxy), virtualDirectory, appPhysicalDirectory);
             _appDomainProxy.RunCodeInAppDomain(() =>
             {
-                if (experimentalSetup) { ExperimentalPreload(); }
+                if (UseExperimentalSetup) { ExperimentalPreload(); }
 
                 InitializeApplication();
                 FilterProviders.Providers.Add(new InterceptionFilterProvider());
@@ -47,8 +52,7 @@ namespace MvcIntegrationTestFramework.Hosting
         /// Use the `Start` method on the returned AppHost to communicate with the MVC host.
         /// </summary>
         /// <param name="mvcProjectDirectory">Directory containing the MVC project, relative to the solution base path</param>
-        /// <param name="experimentalSetup">If true, include som experimental setup changes and ASP.Net hooks</param>
-        public static AppHost Simulate(string mvcProjectDirectory, bool experimentalSetup = false)
+        public static AppHost Simulate(string mvcProjectDirectory)
         {
             var mvcProjectPath = GetMvcProjectPath(mvcProjectDirectory);
             if (mvcProjectPath == null)
@@ -56,7 +60,7 @@ namespace MvcIntegrationTestFramework.Hosting
                 throw new ArgumentException("Mvc Project " + mvcProjectDirectory + " not found");
             }
             CopyDllFiles(mvcProjectPath);
-            return new AppHost(mvcProjectPath, experimentalSetup);
+            return new AppHost(mvcProjectPath);
         }
 
 
