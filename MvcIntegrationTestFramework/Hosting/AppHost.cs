@@ -19,18 +19,11 @@ namespace MvcIntegrationTestFramework.Hosting
     {
         private readonly AppDomainProxy _appDomainProxy; // The gateway to the ASP.NET-enabled .NET appdomain
 
-        /// <summary>
-        /// If true, include som experimental setup changes and ASP.Net hooks
-        /// </summary>
-        public static bool UseExperimentalSetup = false;
-
-        private AppHost(string appPhysicalDirectory, string virtualDirectory = "/")
+        private AppHost(string appPhysicalDirectory, string virtualDirectory)
         {
             _appDomainProxy = (AppDomainProxy)ApplicationHost.CreateApplicationHost(typeof(AppDomainProxy), virtualDirectory, appPhysicalDirectory);
             _appDomainProxy.RunCodeInAppDomain(() =>
             {
-                if (UseExperimentalSetup) { ExperimentalPreload(); }
-
                 InitializeApplication();
                 FilterProviders.Providers.Add(new InterceptionFilterProvider());
                 LastRequestData.Reset();
@@ -54,13 +47,14 @@ namespace MvcIntegrationTestFramework.Hosting
         /// <param name="mvcProjectDirectory">Directory containing the MVC project, relative to the solution base path</param>
         public static AppHost Simulate(string mvcProjectDirectory)
         {
+            var caller = Assembly.GetCallingAssembly();
             var mvcProjectPath = GetMvcProjectPath(mvcProjectDirectory);
             if (mvcProjectPath == null)
             {
                 throw new ArgumentException("Mvc Project " + mvcProjectDirectory + " not found");
             }
-            CopyDllFiles(mvcProjectPath);
-            return new AppHost(mvcProjectPath);
+            CopyDllFiles(mvcProjectPath, caller.Location);
+            return new AppHost(mvcProjectPath, "/");
         }
 
 
@@ -113,25 +107,6 @@ namespace MvcIntegrationTestFramework.Hosting
             return (HttpApplication)GetApplicationInstanceMethod.Invoke(null, new object[] { httpContext });
         }
 
-        private static void ExperimentalPreload()
-        {
-            // experimental fix to horrible build manager cruft.
-
-            // Trigger the end of 'PreStart' phase
-            // System.Web.Compilation.BuildManager.InvokePreStartInitMethods(new List<MethodInfo>());
-            var preStart = typeof(System.Web.Compilation.BuildManager)
-                .GetMethod("InvokePreStartInitMethods", BindingFlags.Static | BindingFlags.NonPublic);
-            preStart.Invoke(null, new object[] { new List<MethodInfo>() });
-
-            //HttpRuntime._theRuntime._appDomainAppPath
-            //var x = HttpRuntime.AppDomainAppPath;
-            //Console.WriteLine(x);
-
-            // Trigger compile phase
-            var test = System.Web.Compilation.BuildManager.GetReferencedAssemblies();
-            foreach (var assm in test) { Console.WriteLine(assm.ToString()); }
-        }
-
         private static void RecycleApplicationInstance(HttpApplication appInstance)
         {
             RecycleApplicationInstanceMethod.Invoke(null, new object[] { appInstance });
@@ -153,23 +128,21 @@ namespace MvcIntegrationTestFramework.Hosting
         /// <summary>
         /// Copy the test files into the MVC project path
         /// </summary>
-        private static void CopyDllFiles(string mvcProjectPath)
+        private static void CopyDllFiles(string mvcProjectPath, string callerLocation)
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var callerFile = Path.GetFileName(callerLocation);
 
             foreach (var file in Directory.GetFiles(baseDirectory, "*.dll"))
             {
                 var fileName = Path.GetFileName(file) ?? "";
                 var destFile = Path.Combine(mvcProjectPath, "bin", fileName);
 
-                if (fileName == "MvcIntegrationTestFramework.dll") // update the test assembly
+                if (fileName == "MvcIntegrationTestFramework.dll" // update the test assembly
+                    || fileName == callerFile) // bring tests along
                 {
                     if (!File.Exists(destFile) || File.GetCreationTimeUtc(destFile) != File.GetCreationTimeUtc(file))
                         File.Copy(file, destFile, true);
-                }
-                else if (!File.Exists(destFile)) // assume target MVC website has the correct binaries
-                {
-                    File.Copy(file, destFile, false);
                 }
             }
         }

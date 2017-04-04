@@ -49,13 +49,12 @@ Simple Injector
 ---------------
 
 Simple Injector's `[assembly: WebActivator.PostApplicationStartMethod(...)]` injection causes problems with the ASP.Net hosting enviroment.
-There is an experimental `AppHost.UseExperimentalSetup` flag that can be set to try to work around this, but it is very unreliable at present.
-
 You can remove the assembly level injector and call your setup from `Global.aspx` to solve this.
 
 
 System.Web.Optimization
 ------------------------
+
 The Bundle provider for System.Web.Optimization can cause issues when running tests.
 To work around this, call `BundleTable.VirtualPathProvider = new TestVPP();` before you call `AppHost.Simulate`, with `TestVPP` defined:
 
