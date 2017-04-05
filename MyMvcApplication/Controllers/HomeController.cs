@@ -47,6 +47,11 @@ namespace MyMvcApplication.Controllers
             throw new NullReferenceException("This is a sample exception");
         }
 
+        public ActionResult WhoAmI()
+        {
+            return Content(System.Web.HttpContext.Current.User.Identity.GetType().Name);
+        }
+
         [Authorize]
         public ActionResult SecretAction()
         {

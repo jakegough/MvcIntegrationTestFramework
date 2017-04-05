@@ -42,6 +42,8 @@ Then for each test flow, start a browsing session, make your calls and assert ag
 
 See the `MyMvcApplication.Tests` project and the `HomeControllerTests.cs` file for more examples.
 
+The framework injects it's own System.Web.Optimization bundle provider, which supplies blank CSS and Javascript files.
+
 Known issues
 ============
 
@@ -52,40 +54,5 @@ Simple Injector's `[assembly: WebActivator.PostApplicationStartMethod(...)]` inj
 You can remove the assembly level injector and call your setup from `Global.aspx` to solve this.
 
 
-System.Web.Optimization
-------------------------
-
-The Bundle provider for System.Web.Optimization can cause issues when running tests.
-To work around this, call `BundleTable.VirtualPathProvider = new TestVPP();` before you create your bundles when testing, with `TestVPP` defined as:
-
-```csharp
-    public class TestVPP : VirtualPathProvider
-    {
-        public override bool FileExists(string virtualPath)
-        {
-            Console.WriteLine(virtualPath);
-            return true;
-        }
-
-        public override VirtualFile GetFile(string virtualPath)
-        {
-            return new DummyVirtualFile(virtualPath);
-        }
-    }
-
-    public class DummyVirtualFile: VirtualFile
-    {
-        public DummyVirtualFile(string virtualPath) : base(virtualPath)
-        {
-        }
-
-        public override Stream Open()
-        {
-            return new MemoryStream();
-        }
-    }
-```
-
-This fix will hopefully be rolled into the next minor version.
 
 [Icon via game-icones.net](http://game-icons.net/lorc/originals/batteries.html) 

@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
+using System.Web.Optimization;
 using MvcIntegrationTestFramework.Browsing;
 using MvcIntegrationTestFramework.Interception;
 
 namespace MvcIntegrationTestFramework.Hosting
 {
-
     /// <summary>
     /// Hosts an ASP.NET application within an ASP.NET-enabled .NET appdomain
     /// and provides methods for executing test code within that appdomain
@@ -60,6 +59,8 @@ namespace MvcIntegrationTestFramework.Hosting
 
         private static void InitializeApplication()
         {
+            BundleTable.VirtualPathProvider = new TestVPP();
+
             var appInstance = GetApplicationInstance();
             appInstance.PostRequestHandlerExecute += delegate
             {
@@ -91,6 +92,7 @@ namespace MvcIntegrationTestFramework.Hosting
             var writer = new StringWriter();
             var workerRequest = new SimpleWorkerRequest("", "", writer);
             var httpContext = new HttpContext(workerRequest);
+            httpContext.User = null;
 
             // This can fail with "BuildManager.EnsureTopLevelFilesCompiled This method cannot be called during the application's pre-start initialization phase"
             //   at System.Web.Compilation.BuildManager.EnsureTopLevelFilesCompiled()

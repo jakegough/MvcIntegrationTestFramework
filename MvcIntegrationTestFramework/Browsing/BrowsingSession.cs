@@ -18,6 +18,14 @@ namespace MvcIntegrationTestFramework.Browsing
             Cookies = new HttpCookieCollection();
         }
 
+        /// <summary>
+        /// Add a new cookie to the session
+        /// </summary>
+        public void AddCookie(string name, string value)
+        {
+            Cookies.Add(new HttpCookie(name, value));
+        }
+
         public RequestResult Get(string url)
         {
             return ProcessRequest(url, HttpVerbs.Get, new NameValueCollection());
@@ -83,6 +91,7 @@ namespace MvcIntegrationTestFramework.Browsing
             var output = new StringWriter();
             string httpVerbName = httpVerb.ToString().ToUpperInvariant();
             var workerRequest = new SimulatedWorkerRequest(url, query, output, Cookies, httpVerbName, bodyData, headers);
+
             HttpRuntime.ProcessRequest(workerRequest);
 
             // Capture the output

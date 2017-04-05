@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Text;
-using System.Web;
 using System.Web.Mvc;
 using MvcIntegrationTestFramework.Browsing;
 using MvcIntegrationTestFramework.Hosting;
@@ -48,6 +47,16 @@ namespace MyMvcApplication.Tests
 				Assert.IsTrue(result.ResponseText.Contains("<!DOCTYPE html"));
 			});
 		}
+
+	    [Test]
+	    public void default_identity_of_http_context()
+	    {
+	        appHost.Start(session =>
+	        {
+	            var result = session.Get("Home/WhoAmI");
+	            Assert.That(result.ResponseText, Is.EqualTo("GenericIdentity"));
+	        });
+	    }
 
 	    [Test]
 	    public void using_the_wrong_verb_results_in_a_failure_code()
@@ -105,7 +114,7 @@ namespace MyMvcApplication.Tests
 			appHost.Start(browsingSession =>
 			{
 				string url = "Home/DoStuffWithSessionAndCookies";
-			    browsingSession.Cookies.Add(new HttpCookie("InputCookie", "inputValue")); 
+			    browsingSession.AddCookie("InputCookie", "inputValue"); // this is a shortcut for `browsingSession.Cookies.Add(new HttpCookie(...));`
 
 				var result = browsingSession.Get(url);
 
