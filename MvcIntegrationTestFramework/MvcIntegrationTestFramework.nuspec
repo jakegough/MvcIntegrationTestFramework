@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>MvcIntegrationTestFramework</id>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <authors>i-e-b</authors>
     <owners>i-e-b</owners>
     <!--<licenseUrl>http://...pending...</licenseUrl>-->
