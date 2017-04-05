@@ -56,7 +56,7 @@ System.Web.Optimization
 ------------------------
 
 The Bundle provider for System.Web.Optimization can cause issues when running tests.
-To work around this, call `BundleTable.VirtualPathProvider = new TestVPP();` before you call `AppHost.Simulate`, with `TestVPP` defined:
+To work around this, call `BundleTable.VirtualPathProvider = new TestVPP();` before you create your bundles when testing, with `TestVPP` defined as:
 
 ```csharp
     public class TestVPP : VirtualPathProvider
@@ -85,5 +85,7 @@ To work around this, call `BundleTable.VirtualPathProvider = new TestVPP();` bef
         }
     }
 ```
+
+This fix will hopefully be rolled into the next minor version.
 
 [Icon via game-icones.net](http://game-icons.net/lorc/originals/batteries.html) 

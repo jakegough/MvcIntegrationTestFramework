@@ -2,15 +2,15 @@
 <package >
   <metadata>
     <id>MvcIntegrationTestFramework</id>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <authors>i-e-b</authors>
     <owners>i-e-b</owners>
     <!--<licenseUrl>http://...pending...</licenseUrl>-->
     <projectUrl>https://github.com/i-e-b/MvcIntegrationTestFramework</projectUrl>
-    <!--<iconUrl>http://...pending...</iconUrl>-->
+    <iconUrl>https://raw.githubusercontent.com/i-e-b/MvcIntegrationTestFramework/master/batteries.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Integration test harness for ASP.Net MVC 5. Allows you to fully integration test an MVC web project without needing to host under IIS or similar. Allows access to both server state and client responses in a single assertion.</description>
-    <releaseNotes>Initial release</releaseNotes>
+    <releaseNotes>Reduced DLL copying to work around version issues</releaseNotes>
     <copyright>2017</copyright>
     <tags>aspnet mvc test integration unit</tags>
     <dependencies>
