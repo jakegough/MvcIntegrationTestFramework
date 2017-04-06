@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HomeControllerTests.cs" />
+    <Compile Include="MvcFindingTests.cs" />
     <Compile Include="NameValueCollectionConversionsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

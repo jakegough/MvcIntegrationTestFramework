@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>MvcIntegrationTestFramework</id>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <authors>i-e-b</authors>
     <owners>i-e-b</owners>
     <!--<licenseUrl>http://...pending...</licenseUrl>-->
@@ -10,9 +10,9 @@
     <iconUrl>https://raw.githubusercontent.com/i-e-b/MvcIntegrationTestFramework/master/batteries.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Integration test harness for ASP.Net MVC 5. Allows you to fully integration test an MVC web project without needing to host under IIS or similar. Allows access to both server state and client responses in a single assertion.</description>
-    <releaseNotes>Includes Web Optimization hooks to work around Bundling issues</releaseNotes>
+    <releaseNotes>Improved startup error message</releaseNotes>
     <copyright>2017</copyright>
-    <tags>aspnet mvc test integration unit functional asp</tags>
+    <tags>aspnet mvc test integration unit functional asp framework</tags>
     <dependencies>
 	  <dependency id="Microsoft.AspNet.Mvc" version="5.2.3" />
 	  <dependency id="Microsoft.AspNet.Razor" version="3.2.3" />

@@ -50,7 +50,7 @@ namespace MvcIntegrationTestFramework.Hosting
             var mvcProjectPath = GetMvcProjectPath(mvcProjectDirectory);
             if (mvcProjectPath == null)
             {
-                throw new ArgumentException("Mvc Project " + mvcProjectDirectory + " not found");
+                throw new ArgumentException("The MVC Project '" + mvcProjectDirectory + "' was not found when searching from '" + AppDomain.CurrentDomain.BaseDirectory + "'");
             }
             CopyDllFiles(mvcProjectPath, caller.Location);
             return new AppHost(mvcProjectPath, "/");
