@@ -43,14 +43,19 @@ namespace MvcIntegrationTestFramework.Hosting
         /// Creates an instance of the AppHost so it can be used to simulate a browsing session.
         /// Use the `Start` method on the returned AppHost to communicate with the MVC host.
         /// </summary>
-        /// <param name="mvcProjectDirectory">Directory containing the MVC project, relative to the solution base path</param>
-        public static AppHost Simulate(string mvcProjectDirectory)
+        /// <param name="mvcProjectDirectories">Directory containing the MVC project, relative to the solution base path</param>
+        public static AppHost Simulate(params string[] mvcProjectDirectories)
         {
             var caller = Assembly.GetCallingAssembly();
-            var mvcProjectPath = GetMvcProjectPath(mvcProjectDirectory);
+            string mvcProjectPath = null;
+            foreach (var mvcProjectDirectory in mvcProjectDirectories)
+            {
+                mvcProjectPath = GetMvcProjectPath(mvcProjectDirectory);
+                if (mvcProjectPath != null) break;
+            }
             if (mvcProjectPath == null)
             {
-                throw new ArgumentException("The MVC Project '" + mvcProjectDirectory + "' was not found when searching from '" + AppDomain.CurrentDomain.BaseDirectory + "'");
+                throw new ArgumentException("The MVC Projects '" + string.Join(", ", mvcProjectDirectories) + "' were not found when searching from '" + AppDomain.CurrentDomain.BaseDirectory + "'");
             }
             CopyDllFiles(mvcProjectPath, caller.Location);
             return new AppHost(mvcProjectPath, "/");
@@ -152,9 +157,10 @@ namespace MvcIntegrationTestFramework.Hosting
         private static string GetMvcProjectPath(string mvcProjectName)
         {
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            while (baseDirectory.Contains("\\"))
+            while (Path.GetPathRoot(baseDirectory) != baseDirectory)
             {
                 baseDirectory = baseDirectory.Substring(0, baseDirectory.LastIndexOf("\\", StringComparison.Ordinal));
+                if (baseDirectory.Length < 3) return null; // Safety check for TFS
                 var mvcPath = Path.Combine(baseDirectory, mvcProjectName);
                 if (Directory.Exists(mvcPath))
                 {

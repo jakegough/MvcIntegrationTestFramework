@@ -50,9 +50,22 @@ Known issues
 Simple Injector
 ---------------
 
-Simple Injector's `[assembly: WebActivator.PostApplicationStartMethod(...)]` injection causes problems with the ASP.Net hosting enviroment.
+Simple Injector's `[assembly: WebActivator.PostApplicationStartMethod(...)]` injection can cause problems with the ASP.Net hosting enviroment.
 You can remove the assembly level injector and call your setup from `Global.aspx` to solve this.
 
+TFS Builds
+----------
+
+TFS Build servers can restructure your project, causing the test framework to not find the MVC project directory.
+To work around this, you can pass multiple potential locations for your project to the `Simulate` function, and the first one to be found will be used.
+
+For example,
+
+```csharp
+    appHost = AppHost.Simulate(
+        "Source\\Web\\MyMvcApplication",             // Local solution location
+        "a\\_PublishedWebsites\\MyMvcApplication");  // TFS build system, under ...\Agent\_work\1\a\_PublishedWebsites ...
+```
 
 
 [Icon via game-icones.net](http://game-icons.net/lorc/originals/batteries.html) 
