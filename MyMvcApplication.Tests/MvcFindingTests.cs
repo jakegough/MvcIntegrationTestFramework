@@ -15,6 +15,7 @@ namespace MyMvcApplication.Tests
             var y = Directory.Exists(x);
             try
             {
+		        AppHost.LoadAllBinaries = true;
                 var appHost = AppHost.Simulate("MyMvcApplication");
                 Assert.That(appHost, Is.Not.Null);
             }
@@ -30,6 +31,7 @@ namespace MyMvcApplication.Tests
             // Just because TFS build is so very wrong.
             try
             {
+		        AppHost.LoadAllBinaries = true;
                 var appHost = AppHost.Simulate("_wrong_invalid_junk", "MyMvcApplication", "gunk_funk_ignore_me");
                 Assert.That(appHost, Is.Not.Null);
             }
@@ -44,6 +46,7 @@ namespace MyMvcApplication.Tests
         {
             try
             {
+		        AppHost.LoadAllBinaries = true;
                 AppHost.Simulate("ThisShouldNotExistOnYourSystem");
             }
             catch (Exception e)
@@ -59,6 +62,7 @@ namespace MyMvcApplication.Tests
         {
             try
             {
+		        AppHost.LoadAllBinaries = true;
                 var appHost = AppHost.Simulate("TargetFolder");
                 Assert.That(appHost, Is.Not.Null);
             }

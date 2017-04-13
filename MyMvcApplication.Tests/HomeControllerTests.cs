@@ -21,6 +21,7 @@ namespace MyMvcApplication.Tests
 
 		    try
 		    {
+		        AppHost.LoadAllBinaries = true;
 		        appHost = AppHost.Simulate("MyMvcApplication");
 		    }
 		    catch (Exception e)

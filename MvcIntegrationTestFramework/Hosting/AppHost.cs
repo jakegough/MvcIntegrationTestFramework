@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Web;
 using System.Web.Hosting;
@@ -16,6 +17,12 @@ namespace MvcIntegrationTestFramework.Hosting
     /// </summary>
     public class AppHost
     {
+        /// <summary>
+        /// If set to true, all the binaries from the test folder will be loaded into the MVC project.
+        /// If set to false, only essential binaries are copied. Defaults to false
+        /// </summary>
+        public static bool LoadAllBinaries = false;
+
         private readonly AppDomainProxy _appDomainProxy; // The gateway to the ASP.NET-enabled .NET appdomain
 
         private AppHost(string appPhysicalDirectory, string virtualDirectory)
@@ -145,8 +152,14 @@ namespace MvcIntegrationTestFramework.Hosting
                 var fileName = Path.GetFileName(file) ?? "";
                 var destFile = Path.Combine(mvcProjectPath, "bin", fileName);
 
-                if (fileName == "MvcIntegrationTestFramework.dll" // update the test assembly
+                var knownAssemblies = new[] {"MvcIntegrationTestFramework.dll", "nunit.framework.dll"};
+
+                if (knownAssemblies.Contains(fileName) // update the test assembly
                     || fileName == callerFile) // bring tests along
+                {
+                    File.Copy(file, destFile, true);
+                }
+                else if (LoadAllBinaries)
                 {
                     if (!File.Exists(destFile) || File.GetCreationTimeUtc(destFile) != File.GetCreationTimeUtc(file))
                         File.Copy(file, destFile, true);
