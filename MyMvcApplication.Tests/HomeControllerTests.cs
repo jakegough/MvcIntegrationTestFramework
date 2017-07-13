@@ -31,7 +31,13 @@ namespace MyMvcApplication.Tests
 		    }
 		}
 
-		[Test]
+	    [TestFixtureTearDown]
+	    public void TestFixtureTearDown()
+	    {
+	        appHost.Dispose();
+	    }
+
+	    [Test]
 		public void Root_Url_Renders_Index_View()
 		{
 			appHost.Start(browsingSession =>

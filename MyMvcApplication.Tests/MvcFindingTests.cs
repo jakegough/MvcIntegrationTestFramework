@@ -56,7 +56,7 @@ namespace MyMvcApplication.Tests
             }
             Assert.Fail("AppHost did not throw an exception");
         }
-
+        /*
         [Test]
         public void can_target_a_folder_directly_under_the_test_framework()
         {
@@ -75,7 +75,7 @@ namespace MyMvcApplication.Tests
                 Assert.Fail("Creation failed: " + e.Message);
             }
 
-        }
+        }*/
 
     }
 }

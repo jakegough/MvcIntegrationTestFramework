@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
@@ -15,7 +16,7 @@ namespace MvcIntegrationTestFramework.Hosting
     /// Hosts an ASP.NET application within an ASP.NET-enabled .NET appdomain
     /// and provides methods for executing test code within that appdomain
     /// </summary>
-    public class AppHost
+    public class AppHost : IDisposable
     {
         /// <summary>
         /// If set to true, all the binaries from the test folder will be loaded into the MVC project.
@@ -27,7 +28,7 @@ namespace MvcIntegrationTestFramework.Hosting
 
         private AppHost(string appPhysicalDirectory, string virtualDirectory)
         {
-            _appDomainProxy = (AppDomainProxy)ApplicationHost.CreateApplicationHost(typeof(AppDomainProxy), virtualDirectory, appPhysicalDirectory);
+            _appDomainProxy = (AppDomainProxy) ApplicationHost.CreateApplicationHost(typeof(AppDomainProxy), virtualDirectory, appPhysicalDirectory);
             _appDomainProxy.RunCodeInAppDomain(() =>
             {
                 InitializeApplication();
@@ -67,7 +68,25 @@ namespace MvcIntegrationTestFramework.Hosting
             CopyDllFiles(mvcProjectPath, caller.Location);
             return new AppHost(mvcProjectPath, "/");
         }
-
+        
+        /// <summary>
+        /// Shutdown the application host's domain. The AppHost cannot be used after this.
+        /// </summary>
+        public void Dispose()
+        {
+            var childDomain = _appDomainProxy.CurrentDomain();
+            var maxGen = GC.MaxGeneration;
+            try
+            {
+                GC.Collect(maxGen, GCCollectionMode.Forced, blocking: true);
+                AppDomain.Unload(childDomain);
+            }
+            catch (CannotUnloadAppDomainException)
+            {
+                GC.Collect(maxGen, GCCollectionMode.Forced, blocking: true);
+                AppDomain.Unload(childDomain);
+            }
+        }
 
         private static void InitializeApplication()
         {
@@ -118,12 +137,12 @@ namespace MvcIntegrationTestFramework.Hosting
             // [assembly: WebActivator.PostApplicationStartMethod(...)]
             // start-up code. Removing this fixes the error.
 
-            return (HttpApplication)GetApplicationInstanceMethod.Invoke(null, new object[] { httpContext });
+            return (HttpApplication) GetApplicationInstanceMethod.Invoke(null, new object[] {httpContext});
         }
 
         private static void RecycleApplicationInstance(HttpApplication appInstance)
         {
-            RecycleApplicationInstanceMethod.Invoke(null, new object[] { appInstance });
+            RecycleApplicationInstanceMethod.Invoke(null, new object[] {appInstance});
         }
 
         private static void RefreshEventsList(HttpApplication appInstance)
@@ -136,7 +155,7 @@ namespace MvcIntegrationTestFramework.Hosting
             var stepManager = stepManagerField.GetValue(appInstance);
             var resumeStepsWaitCallback = resumeStepsWaitCallbackField.GetValue(appInstance);
             var buildStepsMethod = stepManager.GetType().GetMethod("BuildSteps", BindingFlags.NonPublic | BindingFlags.Instance);
-            buildStepsMethod.Invoke(stepManager, new[] { resumeStepsWaitCallback });
+            buildStepsMethod.Invoke(stepManager, new[] {resumeStepsWaitCallback});
         }
 
         /// <summary>
@@ -165,6 +184,7 @@ namespace MvcIntegrationTestFramework.Hosting
                         File.Copy(file, destFile, true);
                 }
             }
+            Thread.Sleep(500);
         }
 
         private static string GetMvcProjectPath(string mvcProjectName)

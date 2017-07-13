@@ -23,5 +23,10 @@ namespace MvcIntegrationTestFramework.Hosting
         {
             return null; // Tells .NET not to expire this remoting object
         }
+
+        public AppDomain CurrentDomain()
+        {
+            return AppDomain.CurrentDomain;
+        }
     }
 }
