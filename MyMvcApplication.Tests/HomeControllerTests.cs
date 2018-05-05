@@ -13,7 +13,7 @@ namespace MyMvcApplication.Tests
 	{
 		private AppHost appHost;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void TestFixtureSetUp()
 		{
             //If you MVC project is not in the root of your solution directory then include the path
@@ -31,7 +31,7 @@ namespace MyMvcApplication.Tests
 		    }
 		}
 
-	    [TestFixtureTearDown]
+	    [OneTimeTearDown]
 	    public void TestFixtureTearDown()
 	    {
 	        appHost.Dispose();

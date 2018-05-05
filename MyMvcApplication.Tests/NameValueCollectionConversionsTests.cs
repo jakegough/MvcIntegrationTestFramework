@@ -23,7 +23,7 @@ namespace MyMvcApplication.Tests
     {
         private NameValueCollection converted;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void _When_converting_an_object_has_2_properties_to_name_value_collection()
         {
             converted = NameValueCollectionConversions.ConvertFromObject(new { name = "hello", age = 30 });
@@ -53,7 +53,7 @@ namespace MyMvcApplication.Tests
     {
         private NameValueCollection converted;
        
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void _When_converting_an_object_that_has_a_nested_anonymous_object()
         {
             converted = NameValueCollectionConversions.ConvertFromObject(new {Form = new {name = "hello", age = 30}});

@@ -51,7 +51,7 @@ namespace MyMvcApplication.Tests
             }
             catch (Exception e)
             {
-                Assert.That(e.Message, Is.StringStarting("The MVC Projects 'ThisShouldNotExistOnYourSystem' were not found when searching from '"));
+                Assert.That(e.Message, Does.StartWith("The MVC Projects 'ThisShouldNotExistOnYourSystem' were not found when searching from '"));
                 return;
             }
             Assert.Fail("AppHost did not throw an exception");
